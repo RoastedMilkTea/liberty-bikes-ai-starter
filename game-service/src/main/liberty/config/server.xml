@@ -1,0 +1,53 @@
+<server>
+    <featureManager>
+        <feature>appSecurity-3.0</feature>
+        <feature>cdi-2.0</feature>
+        <feature>concurrent-1.0</feature>
+        <feature>jaxrs-2.1</feature>
+        <feature>jndi-1.0</feature>
+        <feature>jsonb-1.0</feature>
+        <feature>mpConfig-1.3</feature>
+        <feature>mpFaultTolerance-2.0</feature>
+        <feature>mpMetrics-2.0</feature>
+        <feature>mpOpenAPI-1.1</feature>
+        <feature>mpRestClient-1.3</feature>
+        <feature>websocket-1.1</feature>
+    </featureManager>
+    
+    <mpMetrics authentication="false"/>
+
+    <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="${httpPort}" httpsPort="${httpsPort}" />
+    
+    <!-- Dynamically configurable settings -->
+    <jndiEntry jndiName="round/gameSpeed" value="50"/> <!-- Default = 50(ms) -->
+    <jndiEntry jndiName="round/map" value="-1"/> <!-- Default = -1 (random map) -->
+    <jndiEntry jndiName="round/autoStartCooldown" value="20"/> <!-- Default = 20(sec) -->
+    
+    <variable name="jwtKeyStore" value="${server.config.dir}resources/security/validationKeystore.jks"/>
+    <variable name="jwtKeyStorePassword" value="secret"/>
+    <jndiEntry jndiName="jwtKeyStore" value="${jwtKeyStore}"/> 
+    <jndiEntry jndiName="jwtKeyStorePassword" value="${jwtKeyStorePassword}"/> 
+    <jndiEntry jndiName="jwtKeyStoreAlias" value="bike"/> 
+   
+    <applicationManager autoExpand="true"/>
+    
+    <sslDefault sslRef="RpSSLConfig" />  
+    <ssl id="RpSSLConfig"
+         keyStoreRef="validationKeystore"
+         trustStoreRef="validationKeystore"  />  
+    <keyStore id="validationKeystore"
+         password="${jwtKeyStorePassword}"
+         type="jks"
+         location="${jwtKeyStore}" /> 
+
+    <keyStore id="defaultKeyStore" password="secret" />
+    <quickStartSecurity userName="admin" userPassword="admin"/>
+
+    <!-- This configuration allows cross-origin HTTP requests, such
+         as those from the front-end component (different port). -->
+    <cors domain="/"
+          allowedOrigins="*"
+          allowedMethods="GET, DELETE, POST, PUT"
+          allowedHeaders="origin, content-type, accept, authorization, cache-control"
+          maxAge="3600" />
+</server>

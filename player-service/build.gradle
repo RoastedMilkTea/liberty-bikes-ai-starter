@@ -1,0 +1,39 @@
+ext {
+	httpPort = 8081
+	httpsPort = 8444
+	appUrl = "http://${hostname}:${httpPort}/openapi/ui"
+}
+
+liberty {
+	server {
+		name = 'player-service'
+		deploy.dropins = [war]
+		bootstrapProperties = ['httpPort': httpPort, 'httpsPort': httpsPort]
+	}
+}
+
+configurations {
+    postgresql
+}
+
+dependencies {
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+    postgresql group: 'org.postgresql', name: 'postgresql', version: '42.2.8'
+}
+
+task addPostgresqlToServer(type: Copy) {
+  mustRunAfter libertyCreate
+  from configurations.postgresql
+  into "${rootProject.buildDir}/wlp/usr/servers/${liberty.server.name}/postgresql"
+}
+
+task addPostgresqlToBuild(type: Copy) {
+  from configurations.postgresql
+  into "${buildDir}/libs"
+}
+
+assemble.dependsOn 'addPostgresqlToBuild'
+deploy.dependsOn 'addPostgresqlToServer'
+
+// The installLiberty task doesn't work when run in parallel with other installLiberty tasks
+installLiberty.mustRunAfter ':frontend:installLiberty'

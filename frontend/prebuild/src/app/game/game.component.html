@@ -1,0 +1,31 @@
+<div id="titlebar" class="navbar">
+  <h1 id="logo">Liberty<br />Bikes</h1>
+  <div id="game-code-display" *ngIf="!isSingleParty && showPartyId">
+    <h2>code: <span id="game-code">{{partyId}}</span></h2>
+  </div>
+  <div id="game-url-display" *ngIf="isSingleParty && isSpectator">
+    {{window.location.protocol}}//{{window.location.host}}
+  </div>
+</div>
+
+<div id="loader-overlay" class="loader-overlay" *ngIf="showLoader">
+	<div class="spin-loader"></div>
+</div>
+
+<div id="game-container">
+  <div id="game-board">
+    <canvas width="1200" height="1200" id="gameCanvas"></canvas>
+    <canvas width="1200" height="1200" id="overlayCanvas"></canvas>
+  </div>
+</div>
+<div id="players">
+  <app-player-list></app-player-list>
+</div>
+
+<div id="leaderboard">
+  <app-rank-list></app-rank-list>
+</div>
+
+<div id="footer" class="navbar">
+  <button id="gameButton" tabindex="0" type="button" (click)="gameButtonPressed()" [disabled]="gameButtonDisabled">{{gameButtonText}}</button>
+</div>

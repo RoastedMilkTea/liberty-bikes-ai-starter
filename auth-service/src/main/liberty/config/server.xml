@@ -1,0 +1,35 @@
+<server>
+    <featureManager>
+        <feature>appSecurity-3.0</feature>
+        <feature>beanValidation-2.0</feature>
+        <feature>cdi-2.0</feature>
+        <feature>jaxrs-2.1</feature>
+        <feature>jndi-1.0</feature>
+        <feature>jsonb-1.0</feature>
+        <feature>mpConfig-1.3</feature>
+        <feature>mpJwt-1.1</feature>
+        <feature>mpRestClient-1.3</feature>
+        <feature>mpOpenAPI-1.1</feature>
+        <feature>mpMetrics-2.0</feature>
+    </featureManager>
+    
+    <mpMetrics authentication="false"/>
+
+    <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="${httpPort}" httpsPort="${httpsPort}" />
+                  
+    <applicationManager autoExpand="true"/>
+    
+    <sslDefault sslRef="RpSSLConfig" />  
+    <ssl id="RpSSLConfig"
+         keyStoreRef="defaultKeyStore"
+         trustStoreRef="validationKeystore"  />  
+    <keyStore id="validationKeystore"
+         password="secret"
+         type="jks"
+         location="${server.config.dir}resources/security/validationKeystore.jks" /> 
+
+    <keyStore id="defaultKeyStore" password="Liberty" />
+    <quickStartSecurity userName="admin" userPassword="admin"/>
+    	
+    <jndiEntry jndiName="jwtKeyStore" value="${server.config.dir}resources/security/validationKeystore.jks"/>
+</server>

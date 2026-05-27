@@ -1,0 +1,21 @@
+dependencies {
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+}
+
+ext {
+	httpPort = 8080
+	httpsPort = 8443
+	appUrl = "http://${hostname}:${httpPort}/openapi/ui"
+}
+
+liberty {
+	server {
+		name = 'game-service'
+		deploy.dropins = [war]
+		bootstrapProperties = ['httpPort': httpPort, 'httpsPort': httpsPort]
+		jvmOptions = ['-DsingleParty=' + System.getProperty('singleParty', 'true')]
+	}
+}
+
+// The installLiberty task doesn't work when run in parallel with other installLiberty tasks
+installLiberty.mustRunAfter ':frontend:installLiberty'

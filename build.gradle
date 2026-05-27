@@ -1,0 +1,116 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'io.openliberty.tools:liberty-gradle-plugin:3.5.2'
+    }
+}
+
+plugins {
+    id 'com.avast.gradle.docker-compose' version "0.16.11"
+}
+
+task clean(type: Delete) {
+  subprojects.each { dependsOn("${it.name}:clean") };
+  delete 'build'
+}
+
+ext.hostname = 'localhost'
+// Find the public IP address for this machine (if one exists)
+NetworkInterface.getNetworkInterfaces()
+.findAll { it.isUp() && !it.isLoopback() && !it.isVirtual() }
+.each {
+  it.getInetAddresses()
+  .findAll { !it.isLoopbackAddress() && it instanceof Inet4Address }
+  .each {
+    if (hostname.equals('localhost')) {
+      def hn = it.toString();
+      hostname = hn.startsWith("/") ? hn.substring(1, hn.length()) : hn;
+      // ${it} is in the format /<IP>, so only use http:/ instead of http://
+    }
+  }
+}
+
+task dockerStart {
+    dependsOn 'composeUp'
+}
+
+task dockerStop {
+    dependsOn 'composeDown'
+}
+
+composeUp {
+    subprojects.each {
+        dependsOn("${it.name}:assemble")
+    }
+}
+
+subprojects {
+    apply plugin: 'liberty'
+    apply plugin: 'war'
+
+    sourceCompatibility = 1.8
+
+    buildscript {
+        repositories {
+            mavenCentral()
+        }
+        dependencies {
+            classpath 'io.openliberty.tools:liberty-gradle-plugin:3.5.2'
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        providedCompile group: 'org.eclipse.microprofile', name: 'microprofile', version: '3.0'
+        providedCompile group: 'jakarta.platform', name: 'jakarta.jakartaee-api', version: '8.0.0'
+        testImplementation group: 'junit', name: 'junit', version: '4.13.1'
+        testImplementation group: 'org.eclipse', name: 'yasson', version: '1.0.8'
+        libertyRuntime group: 'io.openliberty', name: 'openliberty-runtime', version: '22.0.0.12'
+    }
+    
+    eclipse {
+	    classpath {
+	        defaultOutputDir =  file('build/classes/java/main')
+	        file {
+	            whenMerged {
+	                entries.findAll { it.path.startsWith('src/main') }
+                           .each { it.output = "build/classes/java/main" }
+	                entries.findAll { it.path.startsWith('src/test') }
+	                       .each { it.output = "build/classes/java/test" }
+	            }
+	        }
+	    }
+	  }
+    
+    liberty {
+        install {
+            // use 1 liberty install for the whole repo
+            baseDir = rootProject.buildDir
+        }
+    }
+
+    clean.dependsOn 'libertyStop'
+    libertyDebug.dependsOn 'libertyStop'    
+    libertyStart.dependsOn 'libertyStop', 'test'
+    libertyRun.dependsOn   'libertyStop'
+    
+    task debug { dependsOn 'libertyDebug' }
+    task start { dependsOn 'libertyStart' }
+    task stop  { dependsOn 'libertyStop'  }
+    
+    libertyStart.doLast {
+        println "Application available at: ${appUrl}"
+    }
+    
+    task open {
+        shouldRunAfter 'libertyStart'
+        doLast {
+            java.awt.Desktop.desktop.browse "${appUrl}".toURI()
+        }
+    }
+}

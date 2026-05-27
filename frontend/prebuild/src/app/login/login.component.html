@@ -1,0 +1,162 @@
+<div id="login-container">
+  <div id="login-content">
+    <div id="login-title">
+      <h1>Liberty Bikes</h1>
+    </div>
+
+    <div id="login-icon">
+      <a href="https://openliberty.io" target="_blank">
+        <img id="icon" class="glow" src="../../assets/images/OL_badge.png" width="200" alt="" />
+      </a>
+    </div>
+
+    <div class="slider">
+      <app-slider [activePane]="pane">
+        <div leftPane>
+          <div class="form-group">
+            <div class="form-item">
+              <button type="button" (click)="showGuestLogin()" [disabled]="isPerformingSsoRedirect">Play as Guest</button>
+            </div>
+            <div class="form-item">
+              <button type="button" (click)="showBotLogin()" [disabled]="isPerformingSsoRedirect">Register Bot</button>
+            </div>
+            <div class="form-item">
+              <button type="button" (click)="loginGoogle()" [disabled]="isPerformingSsoRedirect || !isGoogleConfigured">Sign in with Google</button>
+            </div>
+            <div class="form-item">
+              <button type="button" (click)="loginGithub()" [disabled]="isPerformingSsoRedirect || !isGithubConfigured">Sign in with GitHub</button>
+            </div>
+            <div class="form-item">
+              <button type="button" (click)="loginTwitter()" [disabled]="isPerformingSsoRedirect || !isTwitterConfigured">Sign in with Twitter</button>
+            </div>
+            <div class="caption"
+                 *ngIf="isPerformingSsoRedirect"
+                 [@sso]="isPerformingSsoRedirect">
+              Authenticating...
+            </div>
+            <div class="caption"
+                  *ngIf="!isPerformingSsoRedirect && !isSsoCheckComplete"
+                  [@sso]="isPerformingSsoRedirect || isSsoCheckComplete">
+              Checking for sign-in options...
+            </div>
+            <div class="caption"
+                  *ngIf="isSsoCheckComplete && !isPerformingSsoRedirect && (!isGoogleConfigured || !isGithubConfigured || !isTwitterConfigured)"
+                  [@sso]="isPerformingSsoRedirect || isSsoCheckComplete">
+              Some sign-in options are unavailable because they have not been configured
+            </div>
+            <h2 *ngIf="isFullDevice" class="section-header">or</h2>
+            <div *ngIf="isFullDevice" class="form-item">
+              <button type="button" (click)="hostRound()" [disabled]="isPerformingSsoRedirect">Host Round</button>
+            </div>
+          </div>
+        </div>
+
+
+        <div centerPane>
+          <form (submit)="loginAsGuest(username)">
+            <div class="form-group">
+              <div class="form-item">
+                <label>Username</label>
+                <input type="text" id="username" name="username" [(ngModel)]="username" />
+              </div>
+              <div class="form-item">
+                <button type="submit" id="signin">Sign In As Guest</button>
+              </div>
+              <div class="form-item">
+                <button type="button" (click)="cancelLogin()">Cancel</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div aiPane>
+          <div class="form-group">
+            <div class="form-item">
+              <div class="form-item" *ngIf="!hasBotKey" [@sso]="hasBotKey">
+                <label>bot name</label>
+                <input type="text" id="ainame" name="ainame" [(ngModel)]="nextAiName" />
+              </div>
+              <div class="form-item" *ngIf="!hasBotKey" [@sso]="hasBotKey">
+                <button type="submit" id="registerBot" (click)="registerBot(nextAiName)">Register Bot</button>
+              </div>
+              <div class="form-item" id="botKey" *ngIf="hasBotKey" [@sso]="hasBotKey">
+                <div class="explanation">{{aiName}}'s secret key is:</div>
+                <h3>{{this.botKey}}</h3>
+                <div class="explanation">This key will disappear when you leave this page. Don't share this key with anyone else!</div>
+              </div>
+              <div class="form-item">
+                <button type="button" (click)="doneRegisteringBots()">Done</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div rightPane>
+          <form (submit)="joinParty()">
+            <div class="form-group">
+              <div class="form-item" id="player-card">
+                <label>Player</label>
+                <app-player [player]="player"></app-player>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="form-item">
+                <button type="button" (click)="logout()">Log Out</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <div *ngIf="isQuickPlayAllowed" class="form-item">
+                <button type="button" (click)="quickJoin()">Play Now</button>
+              </div>
+
+              <h2 *ngIf="isQuickPlayAllowed && !isSingleParty" class="section-header" style="margin-bottom: 0">or</h2>
+              <div *ngIf="!isSingleParty" class="form-item">
+                <label>Party Code</label>
+                <input type="text" id="roundid" name="roundid" [(ngModel)]="party" autocomplete="off" autocorrect="off"
+                  autocapitalize="off" spellcheck="false">
+              </div>
+              <div *ngIf="!isSingleParty" class="form-item">
+                <button type="submit">Join Party</button>
+              </div>
+            </div>
+            <div *ngIf="isFullDevice" class="form-group">
+              <div class="form-item">
+                <button type="button" (click)="hostRound()">Host Party</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div queuePane>
+          <div class="form-group">
+            <div class="form-item">
+              <h2>The current round <span *ngIf="!this.isSingleParty">for party {{party}} </span>is full! Hang out a bit and you will automatically join the next round.</h2>
+              <hr/>
+              <!-- TODO: Display the queue number more prominently -->
+              <h2>You are number {{queuePosition}} in queue</h2>
+              <hr/>
+              <button type="button" (click)="cancelQueue()">Leave Queue</button>
+            </div>
+          </div>
+        </div>
+
+
+      </app-slider>
+    </div>
+  </div>
+</div>
+
+<div id="footer">
+  <div id="logo" >
+    <img src="../../assets/images/bike_green.png" style="transform: rotate(90deg)" alt="" />
+  </div>
+  <div class="gallery">
+    <a href="https://github.com/OpenLiberty/liberty-bikes" target="_blank">
+      <div class="gallery-item glow">
+        <img class="gallery-icon" src="../../assets/images/github.png" alt="GitHub" />
+        <div class="gallery-label">Explore the code on Github</div>
+      </div>
+    </a>
+  </div>
+
+</div>

@@ -1,0 +1,92 @@
+plugins {
+	id 'com.github.node-gradle.node' version '3.5.1'
+}
+
+ext {
+	httpPort = 12000
+	httpsPort = 12005
+	applicationName = "${war.archiveName}"
+	appUrl = "http://${hostname}:${httpPort}/"
+}
+
+war {
+	archiveName = "${baseName}.${extension}"
+	dependsOn 'copyFrontend'
+}
+
+node {
+	version = '18.14.1'
+	npmVersion = '9.5.0'
+	download = true
+	workDir = file("${rootDir}/frontend/prebuild/node")
+	nodeModulesDir = file("${rootDir}/frontend/prebuild")
+}
+
+task cleanClient(type: Delete) {
+    group 'build client'
+    delete fileTree(dir: "${rootDir}/frontend/src/main/webapp/", exclude: [ '**/WEB-INF/**'])
+}
+
+task cleanNpm(type: Delete) {
+    group 'build client'
+    dependsOn 'clean'
+    delete "${rootDir}/frontend/prebuild/node", "${rootDir}/frontend/prebuild/node_modules"
+}
+
+task npmUpdate {
+    group 'build client'
+    dependsOn 'npm_update'
+}
+
+task buildStandaloneClient(type: NpmTask, dependsOn: npmInstall) {
+    group 'build client'
+    description = 'Compile client side folder for development'
+    inputs.files(fileTree("${rootDir}/frontend/prebuild/").matching {
+        exclude "**/dist"
+    }).withPropertyName("sourceFiles")
+    outputs.dir("${rootDir}/frontend/prebuild/dist").withPropertyName("outputDir")
+
+    if("prod".equals(System.getProperty("env_mode"))) {
+        println "### prod environment ###"
+        file("${rootDir}/frontend/prebuild/src/environments/environment.prod.ts").eachLine { String line ->
+            println line
+        }
+        println "########################"
+        args = ['run', 'prod']
+    } else {
+        args = ['run', 'build']
+    }
+}
+
+task copyFrontend(type: Copy) {
+	group 'build client'
+	dependsOn 'cleanClient', 'buildStandaloneClient'
+
+	from fileTree("${rootDir}/frontend/prebuild/dist")
+	into "${rootDir}/frontend/src/main/webapp"
+}
+
+npm_start {
+	dependsOn 'libertyStop'
+}
+
+libertyStart.doLast {
+    NetworkInterface.getNetworkInterfaces()
+    .findAll { it.isUp() && !it.isLoopback() && !it.isVirtual() }
+    .each {
+        it.getInetAddresses()
+        .findAll { !it.isLoopbackAddress() && it instanceof Inet4Address }
+        .each {
+            // ${it} is in the format /<IP>, so only use http:/ instead of http://
+            println "Application externally available at: http:/${it}:${httpPort}"
+        }
+    }
+}
+
+liberty {
+	server {
+		name = 'frontendServer'
+		deploy.apps = [war]
+		bootstrapProperties = ['httpPort': httpPort, 'httpsPort': httpsPort, 'application.name': applicationName]
+	}
+}
