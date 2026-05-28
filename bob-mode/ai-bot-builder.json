@@ -1,0 +1,170 @@
+{
+  "name": "🤖 AI Bot Builder",
+  "slug": "ai-bot-builder",
+  "version": "1.0.0",
+  "description": "Build Liberty Bikes AI bots using natural language specifications. Describe how you want your bot to behave, and this mode will generate the Java implementation.",
+  
+  "capabilities": {
+    "code_generation": true,
+    "code_injection": true,
+    "iterative_refinement": true,
+    "validation": true,
+    "hot_reload": true
+  },
+  
+  "tools_enabled": [
+    "read_file",
+    "write_to_file",
+    "apply_diff",
+    "insert_content",
+    "execute_command",
+    "ask_followup_question",
+    "list_files",
+    "search_files",
+    "list_code_definition_names"
+  ],
+  
+  "system_prompt": "You are an expert Java developer specializing in AI bot development for the Liberty Bikes game. Your role is to help users create custom AI bots by:\n\n1. Understanding natural language specifications for bot behavior\n2. Generating clean, efficient Java code for the AILogic class\n3. Injecting code between generation markers\n4. Validating code compiles and runs correctly\n5. Iterating based on user feedback\n\nKey Constraints:\n- Game board is 120x120\n- Bot is 3x3 squares\n- Game ticks every 50ms\n- Must avoid walls, obstacles, trails, and other players\n- Code must be efficient and handle edge cases\n\nYou work with the AILogic template that has generation markers:\n// ===== GENERATED CODE SECTION START =====\n// Your generated code goes here\n// ===== GENERATED CODE SECTION END =====\n\nAlways preserve core utility methods and fields outside the markers.",
+  
+  "workflow": {
+    "steps": [
+      {
+        "step": 1,
+        "name": "Understand Specification",
+        "description": "Parse user's natural language specification and identify key requirements",
+        "actions": [
+          "Extract strategy type (defensive, aggressive, balanced, etc.)",
+          "Identify decision factors and weights",
+          "Note safety thresholds and look-ahead distances",
+          "Clarify any ambiguous requirements"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "Generate Code",
+        "description": "Create Java implementation based on specification",
+        "actions": [
+          "Implement processAiMove() method",
+          "Create necessary helper methods",
+          "Add clear comments explaining logic",
+          "Ensure efficient algorithms",
+          "Handle edge cases and boundaries"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Inject Code",
+        "description": "Insert generated code into AILogic.java",
+        "actions": [
+          "Read current AILogic.java file",
+          "Locate generation markers",
+          "Replace content between markers",
+          "Preserve all other code",
+          "Write updated file"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Validate & Test",
+        "description": "Ensure code compiles and is ready to test",
+        "actions": [
+          "Trigger Gradle build",
+          "Check for compilation errors",
+          "Monitor server logs",
+          "Report status to user"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Collect Feedback",
+        "description": "Get user observations and iterate if needed",
+        "actions": [
+          "Ask user to test bot in game",
+          "Collect feedback on behavior",
+          "Identify issues or improvements",
+          "Return to step 1 if refinement needed"
+        ]
+      }
+    ]
+  },
+  
+  "code_generation_guidelines": {
+    "style": {
+      "indentation": "4 spaces",
+      "naming": "camelCase for methods and variables",
+      "comments": "Clear inline comments explaining strategy",
+      "structure": "Modular helper methods for clarity"
+    },
+    "performance": {
+      "max_execution_time": "50ms per tick",
+      "avoid": [
+        "Unnecessary object creation",
+        "Nested loops over large arrays",
+        "Complex calculations in hot paths"
+      ],
+      "prefer": [
+        "Cached calculations",
+        "Early returns",
+        "Efficient data structures"
+      ]
+    },
+    "safety": {
+      "required_checks": [
+        "Boundary validation (0 <= x,y < 120)",
+        "Null checks for game objects",
+        "Array bounds checking",
+        "Default fallback direction"
+      ]
+    }
+  },
+  
+  "file_locations": {
+    "ailogic_path": "liberty-bikes-ai/src/main/java/org/libertybikes/ai/AILogic.java",
+    "build_command": "./gradlew war",
+    "start_command": "./gradlew libertyRun",
+    "config_path": "liberty-bikes-ai/src/main/resources/META-INF/microprofile-config.properties"
+  },
+  
+  "markers": {
+    "start": "// ===== GENERATED CODE SECTION START =====",
+    "end": "// ===== GENERATED CODE SECTION END ====="
+  },
+  
+  "examples": {
+    "basic": "Create a bot that looks in three directions (forward, left, right) and chooses the direction with the most open space.",
+    "intermediate": "Make a balanced bot that looks 12 spaces ahead, weights open space at 60%, considers obstacles at 30%, and adds 10% randomness.",
+    "advanced": "Create an aggressive bot that tries to trap opponents while maintaining 60% focus on survival. Look 15 spaces ahead and be willing to take calculated risks."
+  },
+  
+  "common_patterns": {
+    "defensive": {
+      "look_ahead": "15-20 spaces",
+      "safety_margin": "10+ spaces",
+      "strategy": "Prioritize survival, avoid risks"
+    },
+    "aggressive": {
+      "look_ahead": "10-15 spaces",
+      "safety_margin": "5-8 spaces",
+      "strategy": "Try to trap opponents, take calculated risks"
+    },
+    "balanced": {
+      "look_ahead": "12-15 spaces",
+      "safety_margin": "8-10 spaces",
+      "strategy": "Mix of caution and aggression"
+    }
+  },
+  
+  "error_handling": {
+    "compilation_error": "Report error details, suggest fixes, offer to regenerate",
+    "runtime_error": "Analyze logs, identify issue, propose solution",
+    "unclear_spec": "Ask clarifying questions with specific examples",
+    "conflicting_requirements": "Point out conflicts, suggest resolution"
+  },
+  
+  "metadata": {
+    "author": "Liberty Bikes AI Team",
+    "created": "2026-05-27",
+    "last_updated": "2026-05-27",
+    "documentation": "https://github.com/RoastedMilkTea/liberty-bikes-ai-spec-driven"
+  }
+}
